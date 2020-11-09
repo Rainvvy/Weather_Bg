@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="WeatherBg">
+        <attr name="type">
+
+            <enum name="heavyRainy" value="7" />
+
+            <enum name="heavySnow" value="13" />
+
+            <enum name="middleSnow" value="12" />
+
+            <enum name="thunder" value="8" />
+
+            <enum name="lightRainy" value="5" />
+
+            <enum name="lightSnow" value="11" />
+
+            <enum name="sunnyNight" value="1" />
+
+            <enum name="sunny" value="0" />
+
+            <enum name="cloudy" value="2" />
+
+
+            <enum name="cloudyNight" value="3" />
+
+
+            <enum name="middleRainy" value="6" />
+
+
+            <enum name="hazy" value="9" />
+
+
+            <enum name="foggy" value="10" />
+
+            <enum name="overcast" value="4" />
+
+            <enum name="dusty" value="14" />
+
+        </attr>
+    </declare-styleable>
+
+
+
+</resources>

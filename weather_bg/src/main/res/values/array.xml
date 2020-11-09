@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="weather_sunny">
+        <item name="sunny">#FF0071D1</item>
+        <item name="sunny_tint">#FF6DA6E4</item>
+    </string-array>
+
+    <string-array name="weather_sunny_light">
+        <item name="sunny_light">#FF061E74</item>
+        <item name="sunny_tint_light">#FF275E9A</item>
+    </string-array>
+
+
+    <string-array name="weather_cloudy">
+        <item name="cloudy">#FF5C82C1</item>
+        <item name="cloudy_tint">#FF95B1DB</item>
+    </string-array>
+
+
+    <string-array name="weather_cloudy_light">
+        <item name="cloudy_light">#FF2C3A60</item>
+        <item name="cloudy_tint_light">#FF4B6685</item>
+    </string-array>
+
+
+    <string-array name="weather_overcast">
+        <item name="overcast">#FF8FA3C0</item>
+        <item name="overcast_tint">#FF8C9FB1</item>
+    </string-array>
+
+    <string-array name="weather_lightRainy">
+        <item name="lightRainy">#FF556782</item>
+        <item name="lightRainy_tint">#FF7c8b99</item>
+    </string-array>
+
+
+
+    <string-array name="weather_middleRainy">
+        <item name="middleRainy">#FF3A4B65</item>
+        <item name="middleRainy_tint">#FF495764</item>
+    </string-array>
+
+
+    <string-array name="weather_thunder">
+        <item name="thunder">#FF3B434E</item>
+        <item name="thunder_tint">#FF565D66</item>
+    </string-array>
+
+    <string-array name="weather_hazy">
+        <item name="hazy">#FF989898</item>
+        <item name="hazy_tint">#FF4B4B4B</item>
+    </string-array>
+
+    <string-array name="weather_foggy">
+        <item name="foggy">#FFA6B3C2</item>
+        <item name="foggy_tint">#FF737F88</item>
+    </string-array>
+
+    <string-array name="weather_lightSnow">
+        <item name="lightSnow">#FF6989BA</item>
+        <item name="lightSnow_tint">#FF9DB0CE</item>
+    </string-array>
+
+    <string-array name="weather_middleSnow">
+        <item name="middleSnow">#FF8595AD</item>
+        <item name="middleSnow_tint">#FF95A4BF</item>
+    </string-array>
+
+    <string-array name="weather_heavySnow">
+        <item name="heavySnow">#FF98A2BC</item>
+        <item name="heavySnow_tint">#FFA7ADBF</item>
+    </string-array>
+
+    <string-array name="dusty">
+        <item name="dusty">#FFB99D79</item>
+        <item name="dusty_tint">#FF6C5635</item>
+    </string-array>
+
+</resources>

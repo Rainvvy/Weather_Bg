@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    tools:context="com.rainy.weather_bg.MainActivity"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+        <com.rainy.weahter_bg_plug.WeatherBg
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:type="heavyRainy"
+            />
+        <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+        <com.rainy.weather_bg.RoundShadowLayout
+            android:id="@+id/fullScreen_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:radius="15dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            app:shadowRadius="5dp"
+            app:shadowColor="#EE000000">
+                <!--嵌套需要添加阴影的布局 -->
+                <com.rainy.weahter_bg_plug.WeatherBg
+                    android:id="@+id/weather"
+                    android:layout_width="250dp"
+                    android:layout_height="400dp"
+                    app:type="sunny"
+                    />
+                <TextView
+                    android:id="@+id/weather_tv"
+                    android:layout_width="250dp"
+                    android:layout_height="400dp"
+                    android:gravity="center"
+                    android:textColor="#ffff"
+                    android:textSize="20dp"
+                    android:text="演示效果"
+                    />
+        </com.rainy.weather_bg.RoundShadowLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="宽度："
+                            android:textSize="15sp"/>
+                        <SeekBar
+                            android:id="@+id/widthSeek"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="250"
+                            android:progress="250"
+                            />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center">
+                        <TextView
+
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:text="高度："/>
+                        <SeekBar
+                            android:id="@+id/heightSeek"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:progress="400"
+                            android:max="400"/>
+                </LinearLayout>
+
+
+        </LinearLayout>
+</LinearLayout>
+
+
+</RelativeLayout>
