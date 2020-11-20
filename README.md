@@ -54,6 +54,16 @@
 - foggy
 - overcast
 - dusty
+## 关于作者
+- `qq:549813516`
+- `email:im.wyu@qq.com`
+- `github:https://github.com/Rainvvy`
+
+## 鸣谢
+
+感谢[@下位子](https://github.com/xiaweizi)提供的支持和参考。
+
+[flutter_weather_bg](https://github.com/xiaweizi/flutter_weather_bg)
 
 ## License
 
