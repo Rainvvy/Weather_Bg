@@ -23,7 +23,7 @@
 在`app`下的`build.gradle`添加依赖
 
 	dependencies {
-		 implementation 'com.github.Rainvvy:Weather_Bg:v1.0'
+		 implementation 'com.github.Rainvvy:Weather_Bg:v1.1'
 	}
 
 可以在`XML`直接使用：
