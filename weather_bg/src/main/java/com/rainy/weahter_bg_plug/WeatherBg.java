@@ -14,18 +14,12 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PaintFlagsDrawFilter;
-import android.graphics.Path;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
@@ -38,15 +32,12 @@ import com.rainy.weahter_bg_plug.utils.Unit;
 import com.rainy.weahter_bg_plug.utils.WeatherUtil;
 import com.rainy.weahter_bg_plug.utils.WeatherUtil.WeatherType;
 
-import java.sql.Ref;
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.animation.ValueAnimator.REVERSE;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.util.TypedValue.COMPLEX_UNIT_PX;
-import static com.rainy.weahter_bg_plug.utils.WeatherUtil.WeatherType.sunny;
-import static com.rainy.weahter_bg_plug.utils.WeatherUtil.WeatherType.sunnyNight;
 
 /**
  * create by Rainy on 2020/10/17.
@@ -71,9 +62,12 @@ public class WeatherBg extends View {
     private Bitmap rainSnowBitmap;
     private Bitmap cloudBitmap;
     private Bitmap sunBitmap;
+    private Bitmap starBitmap;
 
-    ///圆角背景图片
-    private Bitmap mMaskBitmap;
+    /*
+     * 天气背景缓存 Bitmap
+     */
+    private Bitmap weatherBgBitmap;
 
     private Bitmap[] thunderBitmaps;
     private ThunderParams thunderParam;
@@ -97,7 +91,10 @@ public class WeatherBg extends View {
 
     /// 流星参数信息
     final int meteorWidth = 200;
-
+    /**
+     * 流星rectF
+     */
+    private RectF starRectF;
     /// 流星的长度
     final float meteorHeight = 0.8f;
 
@@ -107,8 +104,8 @@ public class WeatherBg extends View {
     /**
      * 雨天 云层 滤镜
      */
-    private float[][] rainCloudIdentitys = {
-            {
+    private ColorMatrixColorFilter[] rainCloudFilters = new ColorMatrixColorFilter[]{
+            new ColorMatrixColorFilter(new float[]{
                     0.45f, 0, 0, 0, 0,
 
                     0, 0.52f, 0, 0, 0,
@@ -116,8 +113,8 @@ public class WeatherBg extends View {
                     0, 0, 0.6f, 0, 0,
 
                     0, 0, 0, 1, 0
-            },
-            {
+            }),
+            new ColorMatrixColorFilter(new float[]{
                     0.16f, 0, 0, 0, 0,
 
                     0, 0.22f, 0, 0, 0,
@@ -125,8 +122,8 @@ public class WeatherBg extends View {
                     0, 0, 0.31f, 0, 0,
 
                     0, 0, 0, 1, 0
-            },
-            {
+            }),
+            new ColorMatrixColorFilter(new float[]{
                     0.19f, 0, 0, 0, 0,
 
                     0, 0.2f, 0, 0, 0,
@@ -134,7 +131,7 @@ public class WeatherBg extends View {
                     0, 0, 0.22f, 0, 0,
 
                     0, 0, 0, 1, 0
-            }
+            }),
 
     };
 
@@ -142,8 +139,8 @@ public class WeatherBg extends View {
     /**
      * 雪 云层 滤镜
      */
-    private float[][] snowCloudIdentitys = {
-            {
+    private ColorMatrixColorFilter[] snowCloudFilters = new ColorMatrixColorFilter[]{
+            new ColorMatrixColorFilter(new float[]{
                     0.67f, 0, 0, 0, 0,
 
                     0, 0.75f, 0, 0, 0,
@@ -151,25 +148,25 @@ public class WeatherBg extends View {
                     0, 0, 0.87f, 0, 0,
 
                     0, 0, 0, 1, 0
-            },
-            {
-                    0.7f, 0, 0, 0, 0,
+            }),
+             new ColorMatrixColorFilter(new float[]{
+                     0.7f, 0, 0, 0, 0,
 
-                    0, 0.77f, 0, 0, 0,
+                     0, 0.77f, 0, 0, 0,
 
-                    0, 0, 0.87f, 0, 0,
+                     0, 0, 0.87f, 0, 0,
 
-                    0, 0, 0, 1, 0
-            },
-            {
-                    0.74f, 0, 0, 0, 0,
+                     0, 0, 0, 1, 0
+            }),
+             new ColorMatrixColorFilter(new float[]{
+                     0.74f, 0, 0, 0, 0,
 
-                    0, 0.74f, 0, 0, 0,
+                     0, 0.74f, 0, 0, 0,
 
-                    0, 0, 0.81f, 0, 0,
+                     0, 0, 0.81f, 0, 0,
 
-                    0, 0, 0, 1, 0
-            }
+                     0, 0, 0, 1, 0
+            }),
 
     };
 
@@ -179,12 +176,55 @@ public class WeatherBg extends View {
      */
     private String weatherType ;
 
-    public WeatherBg(Context context,String weatherType) {
+
+
+    /**
+     * 雨雪颜色过滤器
+     */
+    private ColorMatrixColorFilter rainSnowIdentity;
+    /**
+     * 雷电效果颜色过滤器
+     */
+    private ColorMatrixColorFilter thunderIdentity;
+
+    /**
+     * 流星过滤器
+     */
+    private ColorMatrixColorFilter starIdentity;
+
+    private ColorMatrixColorFilter rainyCloudIdentity;
+
+    private ColorMatrixColorFilter snowCloudIdentity;
+    private ColorMatrixColorFilter dustyIdentity;
+    private ColorMatrixColorFilter foggyIdentity;
+    private ColorMatrixColorFilter overcastIdentity;
+
+    private ColorMatrixColorFilter hazyIdentity;
+    private ColorMatrixColorFilter cloudyNightIdentity;
+    private ColorMatrixColorFilter cloudyIdentity;
+
+
+    /**
+     * 透明filter
+     */
+    private ColorMatrixColorFilter[] alphaFilters = new ColorMatrixColorFilter[100];
+
+    /**
+     * 流星渐变
+     */
+    private LinearGradient mStarShader;
+    /**
+     * 背景渐变
+     */
+    private LinearGradient mBackgroundShader;
+
+    private Rect backgroundRect ;
+
+    public WeatherBg(Context context, String weatherType) {
         super(context);
         this.context = context;
         this.weatherType = weatherType;
         init();
-
     }
 
     public WeatherBg(Context context, @Nullable AttributeSet attrs) {
@@ -197,6 +237,20 @@ public class WeatherBg extends View {
         init();
     }
 
+    private void initAlphaFilter(){
+        for (int i = 0; i < 100; i++) {
+
+            alphaFilters[i] =  new ColorMatrixColorFilter(new float[]{
+
+                    1, 0, 0, 0, 0,
+
+                    0, 1, 0, 0, 0,
+
+                    0, 0, 1, 0, 0,
+
+                    0, 0, 0, 0.01f * i, 0});
+        }
+    }
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -205,7 +259,6 @@ public class WeatherBg extends View {
         initParasm();
         initThunderParams();
         initStarMeteorParams();
-
     }
 
     @Override
@@ -267,8 +320,15 @@ public class WeatherBg extends View {
     }
 
     private  void  drawWeather(Canvas canvas){
-
-        //绘制天气背景
+        if(weatherBgBitmap == null){
+            weatherBgBitmap =  Bitmap.createBitmap(width, height,   Bitmap.Config.RGB_565);
+            Canvas weatherBgCanvas = new Canvas(weatherBgBitmap);
+            //绘制天气背景
+            drawWeatherBg(weatherBgCanvas);
+            //绘制云层
+            drawCloudBg(weatherBgCanvas);
+        }
+        canvas.drawBitmap(weatherBgBitmap,0,0,null);
         drawWeatherBg(canvas);
         //绘制云层
         drawCloudBg(canvas);
@@ -288,11 +348,11 @@ public class WeatherBg extends View {
      */
     private void drawWeatherBg(Canvas canvas) {
         int[] color = WeatherUtil.getColor(context, weatherType);
-        LinearGradient mShader = new LinearGradient(0, 0, 0, height, color[0], color[1], Shader.TileMode.MIRROR);
-
-        weatherPaint.setShader(mShader);
+        mBackgroundShader = new LinearGradient(0, 0, 0, height, color[0], color[1], Shader.TileMode.MIRROR);
+        weatherPaint.setShader(mBackgroundShader);
         weatherPaint.setShadowLayer(15, 10, 10, Color.GRAY);
-        canvas.drawRect(new Rect(0,0,width,height), weatherPaint);
+        backgroundRect =  new Rect(0,0,width,height);
+        canvas.drawRect(backgroundRect, weatherPaint);
     }
 
 
@@ -308,17 +368,18 @@ public class WeatherBg extends View {
                 move(param);
                 canvas.save();
                 canvas.scale((float) param.scale, (float) param.scale);
-                ColorMatrixColorFilter identity = new ColorMatrixColorFilter(new float[]{
 
-                        1, 0, 0, 0, 0,
+                int index = (int) (param.alpha * 100);
 
-                        0, 1, 0, 0, 0,
+                if (index < 0) {
+                    index = 0;
+                }
+                if (index > 99) {
+                    index = 99;
+                }
+                rainSnowIdentity = alphaFilters[index];
 
-                        0, 0, 1, 0, 0,
-
-                        0, 0, 0, (float) param.alpha, 0});
-
-                cloudPaint.setColorFilter(identity);
+                cloudPaint.setColorFilter(rainSnowIdentity);
                 canvas.drawBitmap(rainSnowBitmap, (float) param.x, (float) param.y, cloudPaint);
                 canvas.restore();
             }
@@ -382,15 +443,14 @@ public class WeatherBg extends View {
      */
     private void drawRainCloudBg(Canvas canvas) {
         canvas.save();
-        float[] rainIdentity;
 
-        if (weatherType.equals(WeatherType.lightRainy)) rainIdentity = rainCloudIdentitys[0];
-        else if (weatherType.equals(WeatherType.middleRainy)) rainIdentity = rainCloudIdentitys[1];
-        else rainIdentity = rainCloudIdentitys[2];
 
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(rainIdentity);
+        if (weatherType.equals(WeatherType.lightRainy)) rainyCloudIdentity = rainCloudFilters[0];
+        else if (weatherType.equals(WeatherType.middleRainy)) rainyCloudIdentity = rainCloudFilters[1];
+        else rainyCloudIdentity = rainCloudFilters[2];
 
-        cloudPaint.setColorFilter(identity);
+
+        cloudPaint.setColorFilter(rainyCloudIdentity);
         float widthRatio = width / 392.0f;
         float scale = widthRatio * 0.8f;
         canvas.scale(scale, scale);
@@ -408,15 +468,12 @@ public class WeatherBg extends View {
      */
     private void drawSnowCloudBg(Canvas canvas) {
         canvas.save();
-        float[] snowIdentity;
 
-        if (weatherType.equals(WeatherType.lightSnow)) snowIdentity = snowCloudIdentitys[0];
-        else if (weatherType.equals(WeatherType.middleSnow)) snowIdentity = snowCloudIdentitys[1];
-        else snowIdentity = snowCloudIdentitys[2];
+        if (weatherType.equals(WeatherType.lightSnow)) snowCloudIdentity = snowCloudFilters[0];
+        else if (weatherType.equals(WeatherType.middleSnow)) snowCloudIdentity = snowCloudFilters[1];
+        else snowCloudIdentity = snowCloudFilters[2];
 
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(snowIdentity);
-
-        cloudPaint.setColorFilter(identity);
+        cloudPaint.setColorFilter(snowCloudIdentity);
         float widthRatio = width / 392.0f;
         float scale = widthRatio * 0.8f;
         canvas.scale(scale, scale);
@@ -436,18 +493,19 @@ public class WeatherBg extends View {
      */
     private void drawDusty(Canvas canvas) {
         canvas.save();
+        if(dustyIdentity == null){
+            dustyIdentity = new ColorMatrixColorFilter(new float[]{
 
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(new float[]{
+                    0.62f, 0, 0, 0, 0,
 
-                0.62f, 0, 0, 0, 0,
+                    0, 0.55f, 0, 0, 0,
 
-                0, 0.55f, 0, 0, 0,
+                    0, 0, 0.45f, 0, 0,
 
-                0, 0, 0.45f, 0, 0,
+                    0, 0, 0, 1, 0});
+        }
 
-                0, 0, 0, 1, 0});
-
-        cloudPaint.setColorFilter(identity);
+        cloudPaint.setColorFilter(dustyIdentity);
         float widthRatio = width / 392.0f;
         float scale = widthRatio * 2.0f;
         canvas.scale(scale, scale);
@@ -464,18 +522,18 @@ public class WeatherBg extends View {
      */
     private void drawFoggy(Canvas canvas) {
         canvas.save();
+        if(foggyIdentity == null){
+            foggyIdentity = new ColorMatrixColorFilter(new float[]{
 
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(new float[]{
+                    0.75f, 0, 0, 0, 0,
 
-                0.75f, 0, 0, 0, 0,
+                    0, 0.77f, 0, 0, 0,
 
-                0, 0.77f, 0, 0, 0,
+                    0, 0, 0.82f, 0, 0,
 
-                0, 0, 0.82f, 0, 0,
-
-                0, 0, 0, 1, 0});
-
-        cloudPaint.setColorFilter(identity);
+                    0, 0, 0, 1, 0});
+        }
+        cloudPaint.setColorFilter(foggyIdentity);
         float widthRatio = width / 392.0f;
         float scale = widthRatio * 2.0f;
         canvas.scale(scale, scale);
@@ -493,18 +551,20 @@ public class WeatherBg extends View {
      */
     private void drawOvercast(Canvas canvas) {
         canvas.save();
+        if(overcastIdentity == null){
+            overcastIdentity = new ColorMatrixColorFilter(new float[]{
 
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(new float[]{
+                    1, 0, 0, 0, 0,
 
-                1, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0,
 
-                0, 1, 0, 0, 0,
+                    0, 0, 1, 0, 0,
 
-                0, 0, 1, 0, 0,
+                    0, 0, 0, 0.7f, 0});
+        }
 
-                0, 0, 0, 0.7f, 0});
 
-        cloudPaint.setColorFilter(identity);
+        cloudPaint.setColorFilter(overcastIdentity);
         float widthRatio = width / 392.0f;
         float scale = widthRatio * 0.8f;
         canvas.scale(scale, scale);
@@ -524,18 +584,18 @@ public class WeatherBg extends View {
      */
     private void drawHazy(Canvas canvas) {
         canvas.save();
+        if(hazyIdentity == null){
+            hazyIdentity = new ColorMatrixColorFilter(new float[]{
 
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(new float[]{
+                    0.67f, 0, 0, 0, 0,
 
-                0.67f, 0, 0, 0, 0,
+                    0, 0.67f, 0, 0, 0,
 
-                0, 0.67f, 0, 0, 0,
+                    0, 0, 0.67f, 0, 0,
 
-                0, 0, 0.67f, 0, 0,
-
-                0, 0, 0, 1, 0});
-
-        cloudPaint.setColorFilter(identity);
+                    0, 0, 0, 1, 0});
+        }
+        cloudPaint.setColorFilter(hazyIdentity);
         float widthRatio = width / 392.0f;
         float scale = widthRatio * 2.0f;
         canvas.scale(scale, scale);
@@ -553,18 +613,18 @@ public class WeatherBg extends View {
      */
     private void drawCloudyNight(Canvas canvas) {
         canvas.save();
+        if(cloudyNightIdentity == null){
+            cloudyNightIdentity = new ColorMatrixColorFilter(new float[]{
 
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(new float[]{
+                    0.32f, 0, 0, 0, 0,
 
-                0.32f, 0, 0, 0, 0,
+                    0, 0.39f, 0, 0, 0,
 
-                0, 0.39f, 0, 0, 0,
+                    0, 0, 0.52f, 0, 0,
 
-                0, 0, 0.52f, 0, 0,
-
-                0, 0, 0, 0.9f, 0});
-
-        cloudPaint.setColorFilter(identity);
+                    0, 0, 0, 0.9f, 0});
+        }
+        cloudPaint.setColorFilter(cloudyNightIdentity);
         float widthRatio = width / 392.0f;
         float scale = widthRatio * 0.8f;
         canvas.scale(scale, scale);
@@ -590,8 +650,11 @@ public class WeatherBg extends View {
      * 改变天气效果
      */
     public void changeWeather(String type) {
-
+        if(weatherType.equals(type)){
+            return;
+        }
         weatherType = type;
+
 
         if (weatherType == null){
             weatherType = WeatherUtil.weathers[index] ;
@@ -618,18 +681,18 @@ public class WeatherBg extends View {
      */
     private void drawCloudy(Canvas canvas) {
         canvas.save();
+        if(cloudyIdentity == null){
+            cloudyIdentity = new ColorMatrixColorFilter(new float[]{
 
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(new float[]{
+                    1, 0, 0, 0, 0,
 
-                1, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0,
 
-                0, 1, 0, 0, 0,
+                    0, 0, 1, 0, 0,
 
-                0, 0, 1, 0, 0,
-
-                0, 0, 0, 0.9f, 0});
-
-        cloudPaint.setColorFilter(identity);
+                    0, 0, 0, 0.9f, 0});
+        }
+        cloudPaint.setColorFilter(cloudyIdentity);
         float widthRatio = width / 392.0f;
         float scale = widthRatio * 0.8f;
         canvas.scale(scale, scale);
@@ -678,16 +741,16 @@ public class WeatherBg extends View {
         }
 
         canvas.save();
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(new float[]{
+        int index = (int) (thunderParam.alpha * 100);
 
-                1, 0, 0, 0, 0,
-
-                0, 1, 0, 0, 0,
-
-                0, 0, 1, 0, 0,
-
-                0, 0, 0, thunderParam.alpha, 0});
-        thunderPaint.setColorFilter(identity);
+        if (index < 0) {
+            index = 0;
+        }
+        if (index > 99) {
+            index = 99;
+        }
+        thunderIdentity = alphaFilters[index];
+        thunderPaint.setColorFilter(thunderIdentity);
         float scale = (float) (thunderParam.widthRatio * 1.2);
         canvas.scale(scale, scale);
         canvas.drawBitmap(thunderParam.image, (float) thunderParam.x, (float) thunderParam.y, thunderPaint);
@@ -772,19 +835,18 @@ public class WeatherBg extends View {
             return;
         }
         canvas.save();
-        ColorMatrixColorFilter identity = new ColorMatrixColorFilter(new float[]{
+        int index = (int) (star.alpha * 100);
 
-                1, 0, 0, 0, 0,
-
-                0, 1, 0, 0, 0,
-
-                0, 0, 1, 0, 0,
-
-                0, 0, 0, (float) star.alpha, 0});
-
-        starPaint.setColorFilter(identity);
+        if (index < 0) {
+            index = 0;
+        }
+        if (index > 99) {
+            index = 99;
+        }
+        starIdentity = alphaFilters[index];
+        starPaint.setColorFilter(starIdentity);
         canvas.scale((float) star.scale, (float) star.scale);
-        canvas.drawBitmap(zoomImg(BitmapFactory.decodeResource(getResources(), R.drawable.star), 20, 20), (float) star.x, (float) star.y, starPaint);
+        canvas.drawBitmap(starBitmap, (float) star.x, (float) star.y, starPaint);
         canvas.restore();
         star.move();
 
@@ -799,9 +861,11 @@ public class WeatherBg extends View {
         }
 
         canvas.save();
-        LinearGradient mShader = new LinearGradient(0, 0, 0, width, Color.parseColor("#FFFFFFFF"), Color.parseColor("#00FFFFFF"), Shader.TileMode.MIRROR);
+        if(mStarShader == null){
+            mStarShader = new LinearGradient(0, 0, 0, width, Color.parseColor("#FFFFFFFF"), Color.parseColor("#00FFFFFF"), Shader.TileMode.MIRROR);
+        }
 
-        starPaint.setShader(mShader);
+        starPaint.setShader(mStarShader);
         starPaint.setColorFilter(null);
         starPaint.setAntiAlias(true);
         canvas.rotate((float) (Math.PI * meteor.radians));
@@ -809,9 +873,11 @@ public class WeatherBg extends View {
         canvas.scale(scale, scale);
         canvas.translate(
                 (float) meteor.translateX, (float) (Math.tan(Math.PI * 0.1) * Unit.dip2px(context,meteorWidth) + meteor.translateY));
-//        canvas.translate(
-//                200, 300);
-        canvas.drawRoundRect(new RectF(0, 0, Unit.dip2px(context,meteorWidth), Unit.dip2px(context,meteorHeight)), Unit.dip2px(context,radius), Unit.dip2px(context,radius), starPaint);
+        if(starRectF == null){
+            starRectF = new RectF(0, 0, Unit.dip2px(context,meteorWidth), Unit.dip2px(context,meteorHeight));
+        }
+        float starRadius = Unit.dip2px(context,radius);
+        canvas.drawRoundRect( starRectF, starRadius, starRadius , starPaint);
         meteor.move(context);
         canvas.restore();
     }
@@ -846,18 +912,18 @@ public class WeatherBg extends View {
         Logger.d(TAG, " 天气数据初始化----------");
         if (WeatherUtil.isSnowRain(weatherType)) {
             // 下雨
-            if (weatherType == WeatherType.lightRainy) {
+            if (weatherType.equals(WeatherType.lightRainy)) {
                 count = 70;
-            } else if (weatherType == WeatherType.middleRainy) {
+            } else if (weatherType.equals( WeatherType.middleRainy)) {
                 count = 100;
-            } else if (weatherType == WeatherType.heavyRainy ||
-                    weatherType == WeatherType.thunder) {
+            } else if (weatherType.equals(WeatherType.heavyRainy) ||
+                    weatherType.equals(WeatherType.thunder)) {
                 count = 200;
-            } else if (weatherType == WeatherType.lightSnow) {
+            } else if (weatherType.equals(WeatherType.lightSnow)) {
                 count = 30;
-            } else if (weatherType == WeatherType.middleSnow) {
+            } else if (weatherType.equals(WeatherType.middleSnow)) {
                 count = 100;
-            } else if (weatherType == WeatherType.heavySnow) {
+            } else if (weatherType.equals(WeatherType.heavySnow)) {
                 count = 200;
             }
         }
@@ -882,6 +948,7 @@ public class WeatherBg extends View {
         rainSnowBitmap = BitmapFactory.decodeResource(getResources(), WeatherUtil.isRainy(weatherType) ? R.drawable.rain : R.drawable.snow);
         sunBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.sun);
 
+        starBitmap = zoomImg(BitmapFactory.decodeResource(getResources(), R.drawable.star), 20, 20);
         thunderBitmaps = weatherType.equals(WeatherType.thunder) || weatherType.equals(WeatherType.heavyRainy) ? new Bitmap[]{
                 BitmapFactory.decodeResource(getResources(), R.drawable.lightning0),
                 BitmapFactory.decodeResource(getResources(), R.drawable.lightning1),
@@ -914,6 +981,8 @@ public class WeatherBg extends View {
         starPaint.setMaskFilter(new BlurMaskFilter(1, BlurMaskFilter.Blur.NORMAL));
         starPaint.setColor(Color.WHITE);
         starPaint.setStyle(Paint.Style.FILL);
+
+        initAlphaFilter();
     }
 
     /**
@@ -971,6 +1040,8 @@ public class WeatherBg extends View {
             param.init(width, height, widthRatio);
             meteorParams.add(param);
         }
+
+
     }
 
     public Bitmap zoomImg(Bitmap bm, int newWidth, int newHeight) {

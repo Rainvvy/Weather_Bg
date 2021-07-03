@@ -8,7 +8,6 @@ import com.rainy.weahter_bg_plug.R;
 import java.util.HashMap;
 
 
-
 /**
  * create by Rainy on 2020/10/17.
  * email: im.wyu@qq.com
@@ -18,7 +17,7 @@ import java.util.HashMap;
 public class WeatherUtil {
 
 
-    private static HashMap<String, String[]> weatherColors = new HashMap<>();
+    private static HashMap<String, int[]> weatherColors = new HashMap<>();
 
     private static HashMap<Integer, String> xmlWeatherTypes;
 
@@ -78,34 +77,36 @@ public class WeatherUtil {
             initWeatherHashMaps(context);
         }
 
-        String[] re = weatherColors.get(weatherType);
+        int[] re = weatherColors.get(weatherType);
+
         if (re != null) {
 
-            return new int[]{Color.parseColor(re[0]), Color.parseColor(re[1])};
+            return re;
 
         }
 
-        return new int[]{Color.parseColor(weatherColors.get(WeatherType.sunny)[0]), Color.parseColor(weatherColors.get(WeatherType.sunny)[1])};
+        return weatherColors.get(WeatherType.sunny);
 
     }
 
     private static void initWeatherHashMaps(Context context) {
 
-        weatherColors.put(WeatherType.sunny, context.getResources().getStringArray(R.array.weather_sunny));
-        weatherColors.put(WeatherType.sunnyNight, context.getResources().getStringArray(R.array.weather_sunny_light));
-        weatherColors.put(WeatherType.cloudy, context.getResources().getStringArray(R.array.weather_cloudy));
-        weatherColors.put(WeatherType.cloudyNight, context.getResources().getStringArray(R.array.weather_cloudy_light));
-        weatherColors.put(WeatherType.overcast, context.getResources().getStringArray(R.array.weather_overcast));
-        weatherColors.put(WeatherType.lightRainy, context.getResources().getStringArray(R.array.weather_lightRainy));
-        weatherColors.put(WeatherType.middleRainy, context.getResources().getStringArray(R.array.weather_middleRainy));
-        weatherColors.put(WeatherType.heavyRainy, context.getResources().getStringArray(R.array.weather_middleRainy));
-        weatherColors.put(WeatherType.thunder, context.getResources().getStringArray(R.array.weather_thunder));
-        weatherColors.put(WeatherType.hazy, context.getResources().getStringArray(R.array.weather_hazy));
-        weatherColors.put(WeatherType.foggy, context.getResources().getStringArray(R.array.weather_foggy));
-        weatherColors.put(WeatherType.lightSnow, context.getResources().getStringArray(R.array.weather_lightSnow));
-        weatherColors.put(WeatherType.middleSnow, context.getResources().getStringArray(R.array.weather_middleSnow));
-        weatherColors.put(WeatherType.heavySnow, context.getResources().getStringArray(R.array.weather_heavySnow));
-        weatherColors.put(WeatherType.dusty, context.getResources().getStringArray(R.array.dusty));
+        weatherColors.put(WeatherType.sunny, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_sunny)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_sunny)[1])});
+        weatherColors.put(WeatherType.sunnyNight, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_sunny_light)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_sunny_light)[1])});
+        weatherColors.put(WeatherType.cloudyNight, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_cloudy_light)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_cloudy)[1])});
+        weatherColors.put(WeatherType.overcast, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_overcast)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_overcast)[1])});
+        weatherColors.put(WeatherType.lightRainy, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_lightRainy)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_lightRainy)[1])});
+        weatherColors.put(WeatherType.middleRainy, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_middleRainy)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_middleRainy)[1])});
+        weatherColors.put(WeatherType.thunder, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_thunder)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_thunder)[1])});
+        weatherColors.put(WeatherType.hazy, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_hazy)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_hazy)[1])});
+        weatherColors.put(WeatherType.foggy, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_foggy)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_foggy)[1])});
+        weatherColors.put(WeatherType.lightSnow, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_lightSnow)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_lightSnow)[1])});
+        weatherColors.put(WeatherType.middleSnow, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_middleSnow)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_middleSnow)[1])});
+        weatherColors.put(WeatherType.heavySnow, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_heavySnow)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_heavySnow)[1])});
+        weatherColors.put(WeatherType.dusty, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.dusty)[0]),Color.parseColor(context.getResources().getStringArray(R.array.dusty)[1])});
+        weatherColors.put(WeatherType.cloudy, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_cloudy)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_cloudy)[1])});
+        weatherColors.put(WeatherType.heavyRainy, new int[]{Color.parseColor(context.getResources().getStringArray(R.array.weather_middleRainy)[0]),Color.parseColor(context.getResources().getStringArray(R.array.weather_middleRainy)[1])});
+
 
     }
 
